@@ -23,37 +23,34 @@ scene.add(directionalLight);
 // Load models
 const loader = new GLTFLoader(); 
 
-let objToRender; 
+let currentModel; 
 let donut;
 let cone;
-loader.load('/donut.glb', function (gltf) {
+let ball;
+loader.load('/donut.glb', function(gltf) {
     donut = gltf.scene; 
     donut.position.set(0, 0, 0);
     donut.rotation.x = 0.785398;
     donut.rotation.z = -0.523599; 
-    //scene.add(donut);
-}, undefined, function (error) {
+    currentModel = donut;
+    scene.add(currentModel);
+}, undefined, function(error) {
     console.error(error);
 }); 
-loader.load('/cone.glb', function (gltf) {
+loader.load('/cone.glb', function(gltf) {
     cone = gltf.scene; 
-    //scene.add(cone);
-}, undefined, function (error) {
+}, undefined, function(error) {
     console.log(error);
 });
-
+loader.load('/ball.glb', function(gltf) {
+    ball = gltf.scene; 
+}, undefined, function(error) {
+    console.error(error);
+});
+ 
 // Render function
 function animate() {
     requestAnimationFrame(animate); 
-
-    switch(objToRender) {
-        case 'donut': 
-            scene.add(donut); 
-            break;
-        case 'cone':
-            scene.add(cone);
-            break;
-    }
 
     renderer.render(scene, camera); 
 }
@@ -65,17 +62,21 @@ Array.from(tankBtns).forEach(element => {
 });
 
 function changeTank(e) {
+    scene.remove(currentModel);
+
     switch(e.target.name) {
         case 'tank1': 
-            objToRender = 'donut';
+            currentModel = donut;
             break;
         case 'tank2':
-            objToRender = 'cone';
+            currentModel = cone;
             break;
         case 'tank3':
-            objToRender = 'cone';
+            currentModel = ball;
             break;
     }
+
+    scene.add(currentModel);
 }
 
 animate();
