@@ -48,6 +48,33 @@ loader.load('/ball.glb', function(gltf) {
     console.error(error);
 });
  
+const mouse = new THREE.Vector2();
+const intersectionPoint = new THREE.Vector3();
+const planeNormal = new THREE.Vector3(); 
+const plane = new THREE.Plane();
+const raycaster = new THREE.Raycaster();
+
+window.addEventListener('mousemove', function(e) {
+    mouse.x = (e.clientX / this.window.innerWidth) * 2 - 1; 
+    mouse.y = -(e.clientY / this.window.innerHeight) * 2 + 1;
+    planeNormal.copy(camera.position).normalize(); 
+    plane.setFromNormalAndCoplanarPoint(planeNormal, scene.position); 
+    raycaster.setFromCamera(mouse, camera); 
+    raycaster.ray.intersectPlane(plane, intersectionPoint);
+});
+
+window.addEventListener('click', function(e) {
+    const sphereGeo = new THREE.SphereGeometry(0.125, 30, 30);
+    const sphereMat = new THREE.MeshStandardMaterial({
+        color: 0xFFEA00, 
+        metalness: 0, 
+        roughness: 0
+    });
+    const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+    scene.add(sphereMesh);
+    sphereMesh.position.copy(intersectionPoint);
+})
+
 // Render function
 function animate() {
     requestAnimationFrame(animate); 
