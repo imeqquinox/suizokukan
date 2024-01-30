@@ -1,6 +1,7 @@
 import './style.css'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as THREE from 'three';
+import * as CANNON from 'cannon-es';
 
 // Scene camera
 const scene = new THREE.Scene(); 
@@ -54,6 +55,20 @@ const planeNormal = new THREE.Vector3();
 const plane = new THREE.Plane();
 const raycaster = new THREE.Raycaster();
 
+const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
+
+const boxBody = new CANNON.Body({
+    mass: 5,
+    shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)),
+});
+
+world.addBody(boxBody);
+
+const boxGeo = new THREE.BoxGeometry(2, 2, 2);
+const boxMat = new THREE.MeshPhongMaterial({color: 0xfafafa,});
+const boxMesh = new THREE.Mesh(boxGeo, boxMat);
+scene.add(boxMesh);
+
 window.addEventListener('mousemove', function(e) {
     mouse.x = (e.clientX / this.window.innerWidth) * 2 - 1; 
     mouse.y = -(e.clientY / this.window.innerHeight) * 2 + 1;
@@ -79,6 +94,10 @@ window.addEventListener('click', function(e) {
 function animate() {
     requestAnimationFrame(animate); 
 
+    boxMesh.position.copy(boxBody.position);
+    boxMesh.quaternion.copy(boxBody.quaternion);
+
+    world.fixedStep();
     renderer.render(scene, camera); 
 }
 
