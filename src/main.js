@@ -49,26 +49,31 @@ loader.load('/ball.glb', function(gltf) {
     console.error(error);
 });
  
+// Phyiscs world
+const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
+const sphereBody = new CANNON.Body({
+    mass: 2.5, 
+    shape: new CANNON.Sphere(1)
+});
+
+// const boxBody = new CANNON.Body({
+//     mass: 5,
+//     shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)),
+// });
+
+// world.addBody(boxBody);
+
+// const boxGeo = new THREE.BoxGeometry(2, 2, 2);
+// const boxMat = new THREE.MeshPhongMaterial({color: 0xfafafa,});
+// const boxMesh = new THREE.Mesh(boxGeo, boxMat);
+// scene.add(boxMesh);
+
 const mouse = new THREE.Vector2();
 const intersectionPoint = new THREE.Vector3();
 const planeNormal = new THREE.Vector3(); 
 const plane = new THREE.Plane();
 const raycaster = new THREE.Raycaster();
-
-const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
-
-const boxBody = new CANNON.Body({
-    mass: 5,
-    shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)),
-});
-
-world.addBody(boxBody);
-
-const boxGeo = new THREE.BoxGeometry(2, 2, 2);
-const boxMat = new THREE.MeshPhongMaterial({color: 0xfafafa,});
-const boxMesh = new THREE.Mesh(boxGeo, boxMat);
-scene.add(boxMesh);
-
+// Mouse position for raycast 
 window.addEventListener('mousemove', function(e) {
     mouse.x = (e.clientX / this.window.innerWidth) * 2 - 1; 
     mouse.y = -(e.clientY / this.window.innerHeight) * 2 + 1;
@@ -78,14 +83,19 @@ window.addEventListener('mousemove', function(e) {
     raycaster.ray.intersectPlane(plane, intersectionPoint);
 });
 
+const sphereGeo = new THREE.SphereGeometry(0.125, 30, 30);
+const sphereMat = new THREE.MeshStandardMaterial({
+    color: 0xFFEA00, 
+    metalness: 0, 
+    roughness: 0
+});
+const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+// On screen click add ball with phyics
 window.addEventListener('click', function(e) {
-    const sphereGeo = new THREE.SphereGeometry(0.125, 30, 30);
-    const sphereMat = new THREE.MeshStandardMaterial({
-        color: 0xFFEA00, 
-        metalness: 0, 
-        roughness: 0
-    });
-    const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+    sphereBody.velocity.set(0, 0, 0);
+    sphereBody.position.copy(intersectionPoint);
+    world.addBody(sphereBody);
+
     scene.add(sphereMesh);
     sphereMesh.position.copy(intersectionPoint);
 })
@@ -94,8 +104,8 @@ window.addEventListener('click', function(e) {
 function animate() {
     requestAnimationFrame(animate); 
 
-    boxMesh.position.copy(boxBody.position);
-    boxMesh.quaternion.copy(boxBody.quaternion);
+    sphereMesh.position.copy(sphereBody.position);
+    sphereMesh.quaternion.copy(sphereBody.quaternion);
 
     world.fixedStep();
     renderer.render(scene, camera); 
