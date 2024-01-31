@@ -56,18 +56,6 @@ const sphereBody = new CANNON.Body({
     shape: new CANNON.Sphere(1)
 });
 
-// const boxBody = new CANNON.Body({
-//     mass: 5,
-//     shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)),
-// });
-
-// world.addBody(boxBody);
-
-// const boxGeo = new THREE.BoxGeometry(2, 2, 2);
-// const boxMat = new THREE.MeshPhongMaterial({color: 0xfafafa,});
-// const boxMesh = new THREE.Mesh(boxGeo, boxMat);
-// scene.add(boxMesh);
-
 const mouse = new THREE.Vector2();
 const intersectionPoint = new THREE.Vector3();
 const planeNormal = new THREE.Vector3(); 
