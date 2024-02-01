@@ -51,10 +51,14 @@ loader.load('/ball.glb', function(gltf) {
  
 // Phyiscs world
 const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
-const sphereBody = new CANNON.Body({
-    mass: 2.5, 
-    shape: new CANNON.Sphere(1)
+
+const groundBody = new CANNON.Body({
+    shape: new CANNON.Plane(),
+    type: CANNON.Body.STATIC
 });
+world.addBody(groundBody);
+groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+groundBody.position.set(0, -3, 0);
 
 const mouse = new THREE.Vector2();
 const intersectionPoint = new THREE.Vector3();
@@ -77,23 +81,32 @@ const sphereMat = new THREE.MeshStandardMaterial({
     metalness: 0, 
     roughness: 0
 });
-const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
-// On screen click add ball with phyics
+const spheres = [];
+const sphereBodies = []; 
+// On screen click add balls with phyics
 window.addEventListener('click', function(e) {
-    sphereBody.velocity.set(0, 0, 0);
+    const sphereBody = new CANNON.Body({
+        mass: 2.5, 
+        shape: new CANNON.Sphere(0.125)
+    });
     sphereBody.position.copy(intersectionPoint);
-    world.addBody(sphereBody);
-
-    scene.add(sphereMesh);
+    sphereBodies.push(sphereBody);
+    world.addBody(sphereBodies[sphereBodies.length - 1]);
+    
+    const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
     sphereMesh.position.copy(intersectionPoint);
+    spheres.push(sphereMesh);
+    scene.add(spheres[spheres.length - 1]);
 })
 
 // Render function
 function animate() {
     requestAnimationFrame(animate); 
 
-    sphereMesh.position.copy(sphereBody.position);
-    sphereMesh.quaternion.copy(sphereBody.quaternion);
+    for (let i = 0; i < spheres.length; i++) {
+        spheres[i].position.copy(sphereBodies[i].position);
+        spheres[i].quaternion.copy(sphereBodies[i].quaternion);
+    }
 
     world.fixedStep();
     renderer.render(scene, camera); 
