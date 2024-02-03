@@ -53,9 +53,9 @@ loader.load('/ball.glb', function(gltf) {
 const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
 
 const groundBody = new CANNON.Body({
-    shape: new CANNON.Plane(),
+    shape: new CANNON.Box(new CANNON.Vec3(2, 2, 2)),
     type: CANNON.Body.STATIC
-});
+})
 world.addBody(groundBody);
 groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 groundBody.position.set(0, -3, 0);
