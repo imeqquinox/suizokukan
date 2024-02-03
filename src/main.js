@@ -103,6 +103,14 @@ window.addEventListener('click', function(e) {
     scene.add(spheres[spheres.length - 1]);
 })
 
+function isObjectOutsideCameraView(object, camera) {
+    let frustum = new THREE.Frustum();
+    let projScreenMatrix = new THREE.Matrix4();
+    projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    frustum.setFromProjectionMatrix(projScreenMatrix); 
+    return !frustum.intersectsObject(object); 
+}
+
 // Render function
 function animate() {
     requestAnimationFrame(animate); 
@@ -110,6 +118,12 @@ function animate() {
     for (let i = 0; i < spheres.length; i++) {
         spheres[i].position.copy(sphereBodies[i].position);
         spheres[i].quaternion.copy(sphereBodies[i].quaternion);
+
+        // Object has fallen, remove from array
+        if (isObjectOutsideCameraView(spheres[i], camera)) {
+            spheres.splice(i, 1);
+            sphereBodies.splice(i, 1);
+        }
     }
 
     world.fixedStep();
