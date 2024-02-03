@@ -85,6 +85,10 @@ const spheres = [];
 const sphereBodies = []; 
 // On screen click add balls with phyics
 window.addEventListener('click', function(e) {
+    // Don't spawn balls on UI buttons
+    if (e.target.className == 'tank-btn')
+        return;
+
     const sphereBody = new CANNON.Body({
         mass: 2.5, 
         shape: new CANNON.Sphere(0.125)
