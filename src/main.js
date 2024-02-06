@@ -86,7 +86,7 @@ const sphereBodies = [];
 // On screen click add balls with phyics
 window.addEventListener('click', function(e) {
     // Don't spawn balls on UI buttons
-    if (e.target.className == 'tank-btn')
+    if (e.target.className == 'tank-btn' || e.target.className == 'dropDown-btn')
         return;
 
     const sphereBody = new CANNON.Body({
@@ -128,6 +128,26 @@ function animate() {
 
     world.fixedStep();
     renderer.render(scene, camera); 
+}
+
+let tankDropdown = document.getElementById('tank-dropdownBtn');
+tankDropdown.addEventListener('click', dropDown);
+
+function dropDown() {
+    document.getElementById('tank-dropdown').classList.toggle('show');
+}
+
+// Close dropdown
+window.onclick = function(e) {
+    if (!e.target.matches('.dropDown-btn')) {
+        let dropdowns = document.getElementsByClassName('dropdown-content');
+        for (let i = 0; i < dropdowns.length; i++) {
+            let openDropdown = dropdowns[i]; 
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
 }
 
 // UI button events
