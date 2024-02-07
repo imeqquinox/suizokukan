@@ -130,11 +130,8 @@ function animate() {
     renderer.render(scene, camera); 
 }
 
-let tankDropdown = document.getElementById('tank-dropdownBtn');
-tankDropdown.addEventListener('click', dropDown);
-
-function dropDown() {
-    document.getElementById('tank-dropdown').classList.toggle('show');
+window.toggleDropDown = function(dropdown) { 
+    document.getElementById(dropdown).classList.toggle('show');
 }
 
 // Close dropdown
