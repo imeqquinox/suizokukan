@@ -131,6 +131,12 @@ function animate() {
 }
 
 window.toggleDropDown = function(dropdown) { 
+    let dropdowns = document.getElementsByClassName('dropdown-content');
+
+    for (let i = 0; i < dropdowns.length; i++) {
+        dropdowns[i].classList.remove('show');
+    }
+
     document.getElementById(dropdown).classList.toggle('show');
 }
 
