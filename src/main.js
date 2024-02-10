@@ -24,6 +24,17 @@ scene.add(directionalLight);
 // Load models
 const loader = new GLTFLoader(); 
 
+let rocksModels = [];
+for (let i = 0; i < 5; i++) {
+    loader.load('/rocks/rock' + (i + 1) +'.glb', function(gltf) {
+        // Scale imported models down
+        gltf.scene.scale.set(0.1, 0.1, 0.1);
+        rocksModels[i] = gltf.scene;
+    }, undefined, function(error) {
+        console.error(error);
+    })
+}
+
 let currentModel; 
 let donut;
 let cone;
@@ -75,32 +86,26 @@ window.addEventListener('mousemove', function(e) {
     raycaster.ray.intersectPlane(plane, intersectionPoint);
 });
 
-const sphereGeo = new THREE.SphereGeometry(0.125, 30, 30);
-const sphereMat = new THREE.MeshStandardMaterial({
-    color: 0xFFEA00, 
-    metalness: 0, 
-    roughness: 0
-});
-const spheres = [];
-const sphereBodies = []; 
+const rocks = [];
+const rockBodies = []; 
 // On screen click add balls with phyics
 window.addEventListener('click', function(e) {
     // Don't spawn balls on UI buttons
     if (e.target.className == 'tank-btn' || e.target.className == 'dropDown-btn')
         return;
 
-    const sphereBody = new CANNON.Body({
+    const rockBody = new CANNON.Body({
         mass: 2.5, 
-        shape: new CANNON.Sphere(0.125)
+        shape: new CANNON.Sphere(0.062)
     });
-    sphereBody.position.copy(intersectionPoint);
-    sphereBodies.push(sphereBody);
-    world.addBody(sphereBodies[sphereBodies.length - 1]);
+    rockBody.position.copy(intersectionPoint);
+    rockBodies.push(rockBody);
+    world.addBody(rockBodies[rockBodies.length - 1]);
     
-    const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
-    sphereMesh.position.copy(intersectionPoint);
-    spheres.push(sphereMesh);
-    scene.add(spheres[spheres.length - 1]);
+    const rockMesh = rocksModels[Math.floor(Math.random() * 5)].clone();
+    rockMesh.position.copy(intersectionPoint);
+    rocks.push(rockMesh);
+    scene.add(rocks[rocks.length - 1]);
 })
 
 function isObjectOutsideCameraView(object, camera) {
@@ -115,14 +120,16 @@ function isObjectOutsideCameraView(object, camera) {
 function animate() {
     requestAnimationFrame(animate); 
 
-    for (let i = 0; i < spheres.length; i++) {
-        spheres[i].position.copy(sphereBodies[i].position);
-        spheres[i].quaternion.copy(sphereBodies[i].quaternion);
-
-        // Object has fallen, remove from array
-        if (isObjectOutsideCameraView(spheres[i], camera)) {
-            spheres.splice(i, 1);
-            sphereBodies.splice(i, 1);
+    for (let i = 0; i < rocks.length; i++) {
+        if (rocks[i] && rockBodies[i]) {
+            rocks[i].position.copy(rockBodies[i].position);
+            rocks[i].quaternion.copy(rockBodies[i].quaternion);
+            
+            //Object has fallen, remove from array
+            if (isObjectOutsideCameraView(rocks[i].children[0], camera)) {
+                rocks.splice(i, 1);
+                rockBodies.splice(i, 1);
+            }
         }
     }
 
