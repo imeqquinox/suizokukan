@@ -27,7 +27,7 @@ scene.add(directionalLight);
 
 // Phyiscs world
 const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
-
+// Physics debugger
 const cannonDebugger = new CannonDebugger(scene, world);
 
 // Load models
@@ -45,34 +45,7 @@ for (let i = 0; i < 5; i++) {
 }
 
 let currentModel; 
-let donut;
-let cone;
-let ball;
 let tank1;
-let tank1Mesh;
-
-let positionAttr;
-let vertices = null;
-loader.load('/donut.glb', function(gltf) {
-    donut = gltf.scene; 
-    donut.position.set(0, 0, 0);
-    donut.rotation.x = 0.785398;
-    donut.rotation.z = -0.523599; 
-    //currentModel = donut;
-    //scene.add(currentModel);
-}, undefined, function(error) {
-    console.error(error);
-}); 
-loader.load('/cone.glb', function(gltf) {
-    cone = gltf.scene; 
-}, undefined, function(error) {
-    console.log(error);
-});
-loader.load('/ball.glb', function(gltf) {
-    ball = gltf.scene; 
-}, undefined, function(error) {
-    console.error(error);
-});
 loader.load('/tank1.glb', function(gltf) {
     // Glass material
     gltf.scene.traverse((child) => {
@@ -90,60 +63,55 @@ loader.load('/tank1.glb', function(gltf) {
         }
     })
 
-    console.log(gltf.scene.children[0].geometry);
     gltf.scene.scale.set(0.5, 0.5, 0.5);
     tank1 = gltf.scene;
     currentModel = tank1;
     scene.add(currentModel);
     
-    const bufferGeomtry = gltf.scene.children[0].geometry; 
-    const positions = bufferGeomtry.attributes.position.array; 
-    vertices = [];
-    for (let i = 0; i < positions.length; i += 3) {
-        vertices.push(new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]));
-    }
-    const cannonVertices = vertices.map(v => new CANNON.Vec3(v.x, v.y, v.z));
-    const tankShape = new CANNON.ConvexPolyhedron({
-        vertices: cannonVertices
+    // Physics bodies
+    const leftWall = new CANNON.Body({
+        shape: new CANNON.Box(new CANNON.Vec3(0.1, 1, 1)),
+        type: CANNON.Body.STATIC
     });
-    const body = new CANNON.Body({
-        shape: tankShape,
-    })
-    world.addBody(body);
-    console.log('ytes')
+    const rightWall = new CANNON.Body({
+        shape: new CANNON.Box(new CANNON.Vec3(0.1, 1, 1)),
+        type: CANNON.Body.STATIC
+    });
+    const frontWall = new CANNON.Body({
+        shape: new CANNON.Box(new CANNON.Vec3(2, 1, 0.1)),
+        type: CANNON.Body.STATIC
+    });
+    const backWall = new CANNON.Body({
+        shape: new CANNON.Box(new CANNON.Vec3(2, 1, 0.1)),
+        type: CANNON.Body.STATIC
+    });
+    // Position bodies 
+    world.addBody(leftWall);
+    world.addBody(rightWall);
+    world.addBody(frontWall);
+    world.addBody(backWall);
+    leftWall.position.set(-2, 1, 0);
+    rightWall.position.set(2, 1, 0);
+    frontWall.position.set(0, 1, 1);
+    backWall.position.set(0, 1, -1);
+
 }, undefined, function(error) {
     console.error(error);
 });
+// Tank base
 loader.load('tankBase1.glb', function(gltf) {
     gltf.scene.scale.set(0.5, 0.5, 0.5);
     scene.add(gltf.scene);
-})
 
-if (!vertices === null) {
-   
-}
-//const positionAttr = tank1Mesh.bufferGeomtry.attributes.position;
-// const tank1Vertices = tank1Geo.vertices.map((v) => new CANNON.Vec3(v.x, v.y, v.z));
-// const tank1Faces = tank1Geo.faces.map((face) => [face.a, face.b, face.c]);
-
-// const tankShape = new CANNON.ConvexPolyhedron({
-//     vertices: tank1Vertices,
-//     faces: tank1Faces
-// });
-
-// const fishTankBody = new CANNON.Body({
-//     shape: tankShape, 
-//     type: CANNON.Body.STATIC
-// });
-// world.addBody(fishTankBody);
-
-// const groundBody = new CANNON.Body({
-//     shape: new CANNON.Box(new CANNON.Vec3(2, 2, 2)),
-//     type: CANNON.Body.STATIC
-// })
-// world.addBody(groundBody);
-// groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-// groundBody.position.set(0, -3, 0);
+    const body = new CANNON.Body({
+        shape: new CANNON.Box(new CANNON.Vec3(2, 1, 1)),
+        type: CANNON.Body.STATIC
+    });
+    world.addBody(body);
+    body.position.set(0, -1, 0);
+}, undefined, function(error) {
+    console.error(error);
+});
 
 const mouse = new THREE.Vector2();
 const intersectionPoint = new THREE.Vector3();
@@ -243,21 +211,21 @@ Array.from(tankBtns).forEach(element => {
 });
 
 function changeTank(e) {
-    scene.remove(currentModel);
+    // scene.remove(currentModel);
 
-    switch(e.target.name) {
-        case 'tank1': 
-            currentModel = tank1;
-            break;
-        case 'tank2':
-            currentModel = cone;
-            break;
-        case 'tank3':
-            currentModel = ball;
-            break;
-    }
+    // switch(e.target.name) {
+    //     case 'tank1': 
+    //         currentModel = tank1;
+    //         break;
+    //     case 'tank2':
+    //         currentModel = cone;
+    //         break;
+    //     case 'tank3':
+    //         currentModel = ball;
+    //         break;
+    // }
 
-    scene.add(currentModel);
+    // scene.add(currentModel);
 }
 
 animate();
