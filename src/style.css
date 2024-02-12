@@ -62,8 +62,9 @@ body {
 }
 
 .button-container {
-  padding: 5px; 
-  margin-block: 10px;
+  margin-inline: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .dropDown-btn {
@@ -75,6 +76,15 @@ body {
   width: 100%;
 }
 
+.dropDown-btn-item {
+  padding: 5px;
+  border-radius: 2em;
+  background-color: #eb7018;
+  color: #242424;
+  display: inline-block;
+  width: 100%;
+}
+
 .dropdown {
   position: relative;
   display: inline-block;
@@ -82,17 +92,17 @@ body {
 
 .dropdown-content {
   display: none;
-  position: absolute;
-  background-color: #f1f1f1;
+  background-color: #005d92;
   min-width: 160px;
   width: 100%;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 4px 4px 8px #242424;
   z-index: 1;
+  border-radius: 0% 0% 10% 10%;
 }
 
 .dropdown-flex {
   display: flex;
-  justify-content: center;
+  align-items: center;
   flex-direction: column;
 }
 
