@@ -15,8 +15,6 @@
 
 body {
   margin: 0;
-  /* display: flex;
-  place-items: center; */
   min-width: 320px;
   min-height: 100vh;
 }
@@ -36,6 +34,13 @@ body {
   width: 200px;
   height: 100vh;
   z-index: 100;
+}
+
+#debuggerBtn {
+  position: absolute;
+  top: 10px; 
+  left: 20px;
+  z-index: 101;
 }
 
 .tank-btn {

@@ -28,7 +28,12 @@ scene.add(directionalLight);
 // Phyiscs world
 const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
 // Physics debugger
-const cannonDebugger = new CannonDebugger(scene, world);
+let debugMeshes = [];
+let isDebugging = false;
+const cannonDebugger = new CannonDebugger(scene, world, { 
+    onInit(body, mesh) {
+        debugMeshes.push(mesh); 
+  }});
 
 // Load models
 const loader = new GLTFLoader(); 
@@ -133,7 +138,7 @@ const rockBodies = [];
 // On screen click add balls with phyics
 window.addEventListener('click', function(e) {
     // Don't spawn balls on UI buttons
-    if (e.target.className == 'tank-btn' || e.target.className == 'dropDown-btn')
+    if (e.target.className == 'tank-btn' || e.target.className == 'dropDown-btn' || e.target.id == 'debuggerBtn')
         return;
 
     const rockBody = new CANNON.Body({
@@ -176,9 +181,18 @@ function animate() {
     }
 
     world.fixedStep();
-    cannonDebugger.update();
+    if (isDebugging) {
+        cannonDebugger.update();
+    } 
     controls.update();
     renderer.render(scene, camera); 
+}
+
+window.togglePhysicsDebugger = function() {
+    isDebugging = !isDebugging;
+    debugMeshes.forEach(mesh => {
+        mesh.visible = isDebugging;
+    })
 }
 
 window.toggleDropDown = function(dropdown) { 
