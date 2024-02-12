@@ -1,7 +1,9 @@
 import './style.css'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import CannonDebugger from 'cannon-es-debugger';
 
 // Scene camera
 const scene = new THREE.Scene(); 
@@ -13,13 +15,20 @@ camera.position.z = 5;
 const renderer = new THREE.WebGLRenderer(); 
 renderer.setSize(window.innerWidth, window.innerHeight); 
 document.body.appendChild(renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 
 // Lights 
 const light = new THREE.AmbientLight(0x404040);
 scene.add(light);
 const directionalLight = new THREE.DirectionalLight( 0xffffff, 5 );
 directionalLight.position.x = 2;
+directionalLight.position.z = 2;
 scene.add(directionalLight);
+
+// Phyiscs world
+const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
+
+const cannonDebugger = new CannonDebugger(scene, world);
 
 // Load models
 const loader = new GLTFLoader(); 
@@ -39,13 +48,18 @@ let currentModel;
 let donut;
 let cone;
 let ball;
+let tank1;
+let tank1Mesh;
+
+let positionAttr;
+let vertices = null;
 loader.load('/donut.glb', function(gltf) {
     donut = gltf.scene; 
     donut.position.set(0, 0, 0);
     donut.rotation.x = 0.785398;
     donut.rotation.z = -0.523599; 
-    currentModel = donut;
-    scene.add(currentModel);
+    //currentModel = donut;
+    //scene.add(currentModel);
 }, undefined, function(error) {
     console.error(error);
 }); 
@@ -59,17 +73,77 @@ loader.load('/ball.glb', function(gltf) {
 }, undefined, function(error) {
     console.error(error);
 });
- 
-// Phyiscs world
-const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
+loader.load('/tank1.glb', function(gltf) {
+    // Glass material
+    gltf.scene.traverse((child) => {
+        if (child.isMesh) {
+            child.material = new THREE.MeshPhysicalMaterial({
+                color: 0xffffff,
+                roughness: 0,
+                metalness: 0,
+                transmission:  1.0, // Set to  1.0 for full transparency
+                reflectivity:  0.8, // Controls the strength of the refraction effect
+                opacity:  0.0, // Should be  1.0 when transmission is non-zero
+                ior:  1.45, // Index of Refraction, adjust to match the glass you want to mimic
+                thickness:  0.01, // Adjust as needed for the thickness of your glass
+            });
+        }
+    })
 
-const groundBody = new CANNON.Body({
-    shape: new CANNON.Box(new CANNON.Vec3(2, 2, 2)),
-    type: CANNON.Body.STATIC
+    console.log(gltf.scene.children[0].geometry);
+    gltf.scene.scale.set(0.5, 0.5, 0.5);
+    tank1 = gltf.scene;
+    currentModel = tank1;
+    scene.add(currentModel);
+    
+    const bufferGeomtry = gltf.scene.children[0].geometry; 
+    const positions = bufferGeomtry.attributes.position.array; 
+    vertices = [];
+    for (let i = 0; i < positions.length; i += 3) {
+        vertices.push(new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]));
+    }
+    const cannonVertices = vertices.map(v => new CANNON.Vec3(v.x, v.y, v.z));
+    const tankShape = new CANNON.ConvexPolyhedron({
+        vertices: cannonVertices
+    });
+    const body = new CANNON.Body({
+        shape: tankShape,
+    })
+    world.addBody(body);
+    console.log('ytes')
+}, undefined, function(error) {
+    console.error(error);
+});
+loader.load('tankBase1.glb', function(gltf) {
+    gltf.scene.scale.set(0.5, 0.5, 0.5);
+    scene.add(gltf.scene);
 })
-world.addBody(groundBody);
-groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-groundBody.position.set(0, -3, 0);
+
+if (!vertices === null) {
+   
+}
+//const positionAttr = tank1Mesh.bufferGeomtry.attributes.position;
+// const tank1Vertices = tank1Geo.vertices.map((v) => new CANNON.Vec3(v.x, v.y, v.z));
+// const tank1Faces = tank1Geo.faces.map((face) => [face.a, face.b, face.c]);
+
+// const tankShape = new CANNON.ConvexPolyhedron({
+//     vertices: tank1Vertices,
+//     faces: tank1Faces
+// });
+
+// const fishTankBody = new CANNON.Body({
+//     shape: tankShape, 
+//     type: CANNON.Body.STATIC
+// });
+// world.addBody(fishTankBody);
+
+// const groundBody = new CANNON.Body({
+//     shape: new CANNON.Box(new CANNON.Vec3(2, 2, 2)),
+//     type: CANNON.Body.STATIC
+// })
+// world.addBody(groundBody);
+// groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+// groundBody.position.set(0, -3, 0);
 
 const mouse = new THREE.Vector2();
 const intersectionPoint = new THREE.Vector3();
@@ -108,12 +182,12 @@ window.addEventListener('click', function(e) {
     scene.add(rocks[rocks.length - 1]);
 })
 
-function isObjectOutsideCameraView(object, camera) {
+function isObjectOutsideCameraView(mesh, camera) {
     let frustum = new THREE.Frustum();
     let projScreenMatrix = new THREE.Matrix4();
     projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     frustum.setFromProjectionMatrix(projScreenMatrix); 
-    return !frustum.intersectsObject(object); 
+    return !frustum.intersectsObject(mesh); 
 }
 
 // Render function
@@ -134,6 +208,8 @@ function animate() {
     }
 
     world.fixedStep();
+    cannonDebugger.update();
+    controls.update();
     renderer.render(scene, camera); 
 }
 
@@ -171,7 +247,7 @@ function changeTank(e) {
 
     switch(e.target.name) {
         case 'tank1': 
-            currentModel = donut;
+            currentModel = tank1;
             break;
         case 'tank2':
             currentModel = cone;
