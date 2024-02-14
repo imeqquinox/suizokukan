@@ -4,18 +4,26 @@ import { initScene } from './scene';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import CannonDebugger from 'cannon-es-debugger';
+import { setupUI, togglePhysicsDebuggerUI } from './UI';
 
 const { scene, camera, renderer, controls } = initScene();
+setupUI();
 
 // Phyiscs world
 const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
 // Physics debugger
 let debugMeshes = [];
 let isDebugging = false;
+const setIsDebugging = (value) => { isDebugging = value };
 const cannonDebugger = new CannonDebugger(scene, world, { 
     onInit(body, mesh) {
         debugMeshes.push(mesh); 
-  }});
+}});
+
+// Dont like this 
+window.togglePhysicsDebugger = () => {
+    togglePhysicsDebuggerUI(isDebugging, setIsDebugging, debugMeshes);
+}
 
 // Load models
 const loader = new GLTFLoader(); 
@@ -171,59 +179,3 @@ function update() {
 }
 
 update(); 
-
-window.togglePhysicsDebugger = function() {
-    isDebugging = !isDebugging;
-    debugMeshes.forEach(mesh => {
-        mesh.visible = isDebugging;
-    })
-}
-
-window.toggleDropDown = function(dropdown) { 
-    let dropdowns = document.getElementsByClassName('dropdown-content');
-
-    for (let i = 0; i < dropdowns.length; i++) {
-        dropdowns[i].classList.remove('show');
-    }
-
-    document.getElementById(dropdown).classList.toggle('show');
-}
-
-// Close dropdown
-window.onclick = function(e) {
-    if (!e.target.matches('.dropDown-btn')) {
-        let dropdowns = document.getElementsByClassName('dropdown-content');
-        for (let i = 0; i < dropdowns.length; i++) {
-            let openDropdown = dropdowns[i]; 
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
-            }
-        }
-    }
-}
-
-// UI button events
-let tankBtns = document.getElementsByClassName('tank-btn');
-Array.from(tankBtns).forEach(element => {
-    element.addEventListener('click', changeTank);
-});
-
-function changeTank(e) {
-    // scene.remove(currentModel);
-
-    // switch(e.target.name) {
-    //     case 'tank1': 
-    //         currentModel = tank1;
-    //         break;
-    //     case 'tank2':
-    //         currentModel = cone;
-    //         break;
-    //     case 'tank3':
-    //         currentModel = ball;
-    //         break;
-    // }
-
-    // scene.add(currentModel);
-}
-
-// animate();
