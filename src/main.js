@@ -1,29 +1,11 @@
 import './style.css'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { initScene } from './scene';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import CannonDebugger from 'cannon-es-debugger';
 
-// Scene camera
-const scene = new THREE.Scene(); 
-scene.background = new THREE.Color(0x79b2e0);
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); 
-camera.position.z = 5; 
-
-// Renderer
-const renderer = new THREE.WebGLRenderer(); 
-renderer.setSize(window.innerWidth, window.innerHeight); 
-document.body.appendChild(renderer.domElement);
-const controls = new OrbitControls(camera, renderer.domElement);
-
-// Lights 
-const light = new THREE.AmbientLight(0x404040);
-scene.add(light);
-const directionalLight = new THREE.DirectionalLight( 0xffffff, 5 );
-directionalLight.position.x = 2;
-directionalLight.position.z = 2;
-scene.add(directionalLight);
+const { scene, camera, renderer, controls } = initScene();
 
 // Phyiscs world
 const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
@@ -163,9 +145,8 @@ function isObjectOutsideCameraView(mesh, camera) {
     return !frustum.intersectsObject(mesh); 
 }
 
-// Render function
-function animate() {
-    requestAnimationFrame(animate); 
+function update() {
+    requestAnimationFrame(update);
 
     for (let i = 0; i < rocks.length; i++) {
         if (rocks[i] && rockBodies[i]) {
@@ -183,10 +164,13 @@ function animate() {
     world.fixedStep();
     if (isDebugging) {
         cannonDebugger.update();
-    } 
+    }
+
     controls.update();
-    renderer.render(scene, camera); 
+    renderer.render(scene, camera);
 }
+
+update(); 
 
 window.togglePhysicsDebugger = function() {
     isDebugging = !isDebugging;
@@ -242,4 +226,4 @@ function changeTank(e) {
     // scene.add(currentModel);
 }
 
-animate();
+// animate();
