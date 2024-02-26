@@ -5,13 +5,15 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import CannonDebugger from 'cannon-es-debugger';
 import { setupUI, togglePhysicsDebuggerUI } from './UI';
+import { initPhysics, initPhysicsDebugger } from './physics';
+import { waterShaderMaterial, basicWaterMat } from './waterShader';
 
 const { scene, camera, renderer, controls } = initScene();
+const world = initPhysics();
+//const { debugMeshes, isDebugging, cannonDebugger } = initPhysicsDebugger(scene, world);
 setupUI();
 
-// Phyiscs world
-const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
-// Physics debugger
+// // Physics debugger
 let debugMeshes = [];
 let isDebugging = false;
 const setIsDebugging = (value) => { isDebugging = value };
@@ -23,7 +25,7 @@ const cannonDebugger = new CannonDebugger(scene, world, {
 // Dont like this 
 window.togglePhysicsDebugger = () => {
     togglePhysicsDebuggerUI(isDebugging, setIsDebugging, debugMeshes);
-}
+} 
 
 // Load models
 const loader = new GLTFLoader(); 
@@ -153,6 +155,12 @@ function isObjectOutsideCameraView(mesh, camera) {
     return !frustum.intersectsObject(mesh); 
 }
 
+const waterGeo = new THREE.PlaneGeometry(4, 2); 
+const water = new THREE.Mesh(waterGeo, basicWaterMat); 
+scene.add(water);
+water.position.y = 1.5;
+water.rotateX(Math.PI / -2);
+
 function update() {
     requestAnimationFrame(update);
 
@@ -169,6 +177,9 @@ function update() {
         }
     }
 
+    basicWaterMat.uniforms.time.value += 0.01;
+    //waterShaderMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+
     world.fixedStep();
     if (isDebugging) {
         cannonDebugger.update();
@@ -177,5 +188,5 @@ function update() {
     controls.update();
     renderer.render(scene, camera);
 }
-
+    
 update(); 

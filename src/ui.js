@@ -1,4 +1,4 @@
-export function setupUI(isDebugging, ) {
+export function setupUI() {
     // Toggle dropdown
     window.toggleDropDown = function(dropdown) { 
         let dropdowns = document.getElementsByClassName('dropdown-content');
@@ -33,7 +33,7 @@ export function setupUI(isDebugging, ) {
 // Dont like the function here but main windows call event in main
 export function togglePhysicsDebuggerUI(isDebugging, setIsDebugging, debugMeshes) {
     // Toggle phyiscs debugger
-    setIsDebugging(!isDebugging)
+    setIsDebugging(!isDebugging);
     debugMeshes.forEach(mesh => {
         mesh.visible = !isDebugging;
     })

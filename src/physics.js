@@ -1,10 +1,23 @@
 import * as CANNON from 'cannon-es';
+import CannonDebugger from 'cannon-es-debugger';
 
 let world;
 
 export function initPhysics() {
     // Init world physics
     world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82, 0)});
+    return world;
+}
+
+export function initPhysicsDebugger(scene, world) {
+    let debugMeshes = []; 
+    let isDebugging = false; 
+    const cannonDebugger = new CannonDebugger(scene, world, {
+        onInit(body, mesh) {
+            debugMeshes.push(mesh);
+        }
+    });
+    return { debugMeshes, isDebugging, cannonDebugger };
 }
 
 export function initTank1Walls() {
